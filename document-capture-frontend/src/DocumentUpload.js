@@ -12,11 +12,11 @@ function DocumentUpload() {
   const [data, setData] = useState(null);
   const messages = useRef(null);
 
-  const handleFileChange = (e) => {
+  const fileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
-  const handleUpload = async () => {
+  const uploadIMage = async () => {
     if (!file)
         {
             messages.current.show({ severity: 'error', summary: 'Error', detail: 'No file selected for upload', life: 1000 });
@@ -44,9 +44,9 @@ function DocumentUpload() {
       <div className='buttons'>
       <div className='upload'>
       <Messages ref={messages} />
-        <input type="file" onChange={handleFileChange} />
+        <input type="file" onChange={fileChange} />
       </div>
-      <Button onClick={handleUpload} label="Upload and Extract" severity="success" outlined />
+      <Button onClick={uploadIMage} label="Upload and Extract" severity="success" outlined />
       
       </div>
 

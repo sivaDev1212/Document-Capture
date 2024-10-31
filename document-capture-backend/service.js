@@ -8,7 +8,6 @@ const path = require('path');
 const app = express();
 const upload = multer();
 
-// Temporary folder to store images converted from PDF pages
 const TEMP_IMAGE_FOLDER = './temp_images';
 if (!fs.existsSync(TEMP_IMAGE_FOLDER)) {
   fs.mkdirSync(TEMP_IMAGE_FOLDER);
@@ -21,16 +20,13 @@ app.post('/api/extract', upload.single('document'), async (req, res) => {
   try {
     if (fileType === '.pdf') {
         
-      // Convert PDF to images
       const imagePaths = await convertPdfToImages(buffer);
       
-      // Process each page image with OCR
       const ocrResults = [];
       for (const imagePath of imagePaths) {
         const { data } = await Tesseract.recognize(imagePath, 'eng');
         ocrResults.push(data.text);
         console.log("data.text",data.text);
-        // Remove image after OCR to save space
         fs.unlinkSync(imagePath);
       }
       console.log("ocrResults",ocrResults.join('\n'));
@@ -39,7 +35,6 @@ app.post('/api/extract', upload.single('document'), async (req, res) => {
       
       res.json(extractedData);
     } else {
-      // Handle image files (JPEG, PNG)
       const { data } = await Tesseract.recognize(buffer, 'eng');
       const extractedData = parseDocumentData(data.text);
       res.json(extractedData);
@@ -49,7 +44,6 @@ app.post('/api/extract', upload.single('document'), async (req, res) => {
   }
 });
 
-// Function to convert PDF to image files using pdf-poppler
 async function convertPdfToImages(pdfBuffer) {
   const pdfPath = path.join(TEMP_IMAGE_FOLDER, `temp.pdf`);
   fs.writeFileSync(pdfPath, pdfBuffer);
@@ -58,17 +52,15 @@ async function convertPdfToImages(pdfBuffer) {
     format: 'jpeg',
     out_dir: TEMP_IMAGE_FOLDER,
     out_prefix: 'page',
-    page: null, // Convert all pages
+    page: null, 
   };
 
   await pdfPoppler.convert(pdfPath, opts);
 
-  // Collect all page images
   const imagePaths = fs.readdirSync(TEMP_IMAGE_FOLDER)
     .filter(file => file.startsWith('page') && file.endsWith('.jpg'))
     .map(file => path.join(TEMP_IMAGE_FOLDER, file));
 
-  // Remove PDF after conversion
   fs.unlinkSync(pdfPath);
   return imagePaths;
 }
